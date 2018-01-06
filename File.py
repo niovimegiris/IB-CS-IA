@@ -46,11 +46,53 @@ while True:
         break
     else:
         print("Sorry I didn't get that")
-        
-    
+print()
 
-start_location = input("Start Location: ")
-dest_neighborhood = input("Which neighborhood in NYC would you like to visit? (ex. Upper West Side, Soho, etc.) ")
-end_location = bool(input("Would you like to return to your start location? "))
+# Duration
+while True:
+    try:
+        duration = int(input("How many hours do you have free? (e.g. 5)"))
+    except ValueError: # what if user inputs "five"that techinically isnt wrong???????????????
+        print("Sorry I didn't understand that") # return to start of loop
+        continue
+    else:
+        break # success
+print()
+
+# Start location
+start_location = input("Where are you beginning this trip? (e.g. 14435 Wall Street) ")
+start_location = start_location.lower()
+#print(start_location)
+print()
+
+# Destination neighborhood
+dest_neighborhood = input("Which neighborhood in NYC would you like to visit? (ex. Upper West Side, SoHo, etc.) ")
+dest_neighborhood = dest_neighborhood.lower()
+
+# End location of user
+while True:
+    end_location = input("You began at {0}, would you like to return here? ".format(start_location))
+    end_location = end_location.lower()
+    if end_location == 'yes':
+        end_location = start_location
+        break
+    elif end_location == 'no':
+        break
+    else:
+        print("Sorry I didn't get that")
+        
+
+# User interests
+print()
+sections = ['food', 'drinks', 'coffee', 'shops', 'arts', 'outdoors', 'sights', 'trending', 'topPicks']
+print (*sections, sep='\n') # prints list
+while True:    
+    interest = input("Of the choices above, enter one that interests you for this trip: ")
+    if interest.lower() in sections:
+        break
+    else:
+        print("Sorry I didn't get that")
+
+
 
 
