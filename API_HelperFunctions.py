@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # API helper functions
 import json
 import requests
@@ -29,3 +30,10 @@ def getTopVenues(location, section = 'topPicks', num_locations = 10):
 test = getTopVenues('Soho, NY')
     
     
+=======
+# API helper functions
+
+
+# FOURSQUARE
+bhjhbhjbuhohiuuh
+>>>>>>> 15a6ed65af04d545b853ff9ea9636cda44a5b91b
