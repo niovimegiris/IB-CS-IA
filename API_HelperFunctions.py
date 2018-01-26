@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # API helper functions
 import json
 import requests
@@ -22,18 +21,19 @@ def getTopVenues(location, section = 'topPicks', num_locations = 10):
         section = section,
         limit = 10
         )
-    print ("Searching the web for some things to do in {}!").format(location)
-    resp = requests.get(url=irl, params=params)
+    #print ("Searching the web for some things to do in {}!").format(location)
+    resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
     return data
 
 test = getTopVenues('Soho, NY')
-    
-    
-=======
-# API helper functions
+print(test.keys())
+
+#test['meta'] everytime i request, gives unique id
+# write a for loops that loops through test['response']['groups'][0]['items'][0]['venue']['name']
+# changes second 0 add one each time to get all locations
+# every time i loop, each name of each location will append it to a list
+# return all names at end of function
 
 
-# FOURSQUARE
-bhjhbhjbuhohiuuh
->>>>>>> 15a6ed65af04d545b853ff9ea9636cda44a5b91b
+# GOOGLE MAPS
