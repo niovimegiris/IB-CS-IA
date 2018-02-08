@@ -1,4 +1,5 @@
 # API helper functions
+# libraries
 import json
 import requests
 
@@ -27,7 +28,7 @@ def getTopVenues(location, section = 'topPicks', num_locations = 10):
     return data
 
 test = getTopVenues('Soho, NY')
-print(test.keys())
+print(test)
 
 #test['meta'] everytime i request, gives unique id
 # write a for loops that loops through test['response']['groups'][0]['items'][0]['venue']['name']
@@ -37,3 +38,26 @@ print(test.keys())
 
 
 # GOOGLE MAPS
+# key: AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s
+
+def getRoute(start_address, end_address):
+    """
+    INPUT:
+    - start_address : starting location
+    - end_address : destination
+    OUTPUT:
+    - dictionary with direction
+    """
+    url = 'hittps://maps.googleapis.com/maps/api/directions/json'
+    params = dict(
+        origin= start_address,
+        destination= end_address,
+        key='AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s'
+        )
+
+    #print ("Searching Google Maps for best route to take from {0} to {1}").format(start_address, end_address)
+    resp = requests.get(url=url, params=params)
+    data = json.load(resp.text)
+    return data
+
+test = getRoute('Soho', 'Brooklyn')
