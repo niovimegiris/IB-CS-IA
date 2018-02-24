@@ -36,11 +36,14 @@ print(test)
 # every time i loop, each name of each location will append it to a list
 # return all names at end of function
 
+#`all_names = []`
+#all_names.append(name)`
+
 
 # GOOGLE MAPS
 # key: AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s
 
-def getRoute(start_address, end_address):
+def getRoute(start_address, end_address): #FIX GOOGLE MAPS APIIIII
     """
     INPUT:
     - start_address : starting location
@@ -48,7 +51,7 @@ def getRoute(start_address, end_address):
     OUTPUT:
     - dictionary with direction
     """
-    url = 'hittps://maps.googleapis.com/maps/api/directions/json'
+    url = 'https://maps.googleapis.com/maps/api/directions/json'
     params = dict(
         origin= start_address,
         destination= end_address,
@@ -57,7 +60,8 @@ def getRoute(start_address, end_address):
 
     #print ("Searching Google Maps for best route to take from {0} to {1}").format(start_address, end_address)
     resp = requests.get(url=url, params=params)
-    data = json.load(resp.text)
+    data = json.loads(resp.text)
     return data
 
 test = getRoute('Soho', 'Brooklyn')
+print(test)
