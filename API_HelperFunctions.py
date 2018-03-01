@@ -2,6 +2,8 @@
 # libraries
 import json
 import requests
+import random #python library
+import numpy # helps with statistics
 
 #API Keys
 google_maps_key = 'AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s'
@@ -9,7 +11,7 @@ foursquare_id = 'KO2FJZFUOY4SF0JEBVXA4DYVHY4QF4IJEC1IHB2XORULPSVE'
 foursquare_secret = 'IGZJ0YRZVTMSSZ0C2T0Z4YRUN2U0AGGZTRP5JAGFQU5TMIIF'
 
 # FOURSQUARE
-def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_locations = 50, offset = 20):
+def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_locations = 50):
     """
     INPUT:
     - location: string containing location
@@ -26,7 +28,7 @@ def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_l
         near = location,
         section = section,
         limit = num_locations,
-        offset = offset # pages through results (which are random)
+        offset = random.randint(1, 50) # pages through results (which are random)
         )
     #print ("Searching the web for some things to do in {}!").format(location)
     resp = requests.get(url=url, params=params)
@@ -43,10 +45,28 @@ def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_l
 #ISSUE
     # how do we randomize the names of venues for new trips?
 
-test = getTopVenues(foursquare_id, foursquare_secret, 'Soho, NY')
-print(test)
 
+def randomlySelectVenues(venues, num_select):
+    return numpy.random.choice(venues, num_select, replace=False)
 
+venues = getTopVenues(foursquare_id, foursquare_secret, 'Soho, NY')
+venues = randomlySelectVenues(venues, 5) # will randomly select 5 venues
+
+#Issue #2
+    # how do we make sure the selected venues are without replacement (dont repeat)?
+    #ANSWER: USE NUMPY LIBRARY 
+print(venues)
+
+def buildTripPlan(venues, trip_duration = 5, back_to_origin = True):
+    trip_plan = '' #default
+    trip_plan = trip_plan + '\n Your trip will take {0} hours'.format(trip_duration)
+    for step_number, venue in enumerate(venues):
+        trip_plan = trip_plan + '\n Step {0}: Go to {1}'.format(step_number + 1, venue)
+    if back_to_origin:
+        trip_plan = trip_plan + '\n Step {0}: Go to origin'.format(len(venues) +1) #length of venues list
+    return trip_plan
+
+print(buildTripPlan(venues, back_to_origin = False))
 
 
 
