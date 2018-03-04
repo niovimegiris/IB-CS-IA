@@ -37,8 +37,9 @@ def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_l
 
     #Retrieve both the names of the top venues
     top_venues_list = [] #this is a list, not a dictionary
-    for each_location in range(0, num_locations): #loops through each iteration
-        venue_name = data['response']['groups'][0]['items'][each_location]['venue']['name'] # Subset of data
+    for each_location in data['response']['groups'][0]['items']: #loops through each iteration
+        venue_name = each_location['venue']['name']
+        #venue_name = data['response']['groups'][0]['items'][each_location]['venue']['name'] # Subset of data
         top_venues_list.append(venue_name) # Adds venue (element) to existing list of venues
     return top_venues_list
 
@@ -57,17 +58,6 @@ venues = randomlySelectVenues(venues, 5) # will randomly select 5 venues
     #ANSWER: USE NUMPY LIBRARY 
 print(venues)
 
-def buildTripPlan(venues, trip_duration = 5, back_to_origin = True):
-    trip_plan = '' #default
-    trip_plan = trip_plan + '\n Your trip will take {0} hours'.format(trip_duration)
-    for step_number, venue in enumerate(venues):
-        trip_plan = trip_plan + '\n Step {0}: Go to {1}'.format(step_number + 1, venue)
-    if back_to_origin:
-        trip_plan = trip_plan + '\n Step {0}: Go to origin'.format(len(venues) +1) #length of venues list
-    return trip_plan
-
-print(buildTripPlan(venues, back_to_origin = False))
-
 
 
 #test['meta'] everytime i request, gives unique id
@@ -83,7 +73,7 @@ print(buildTripPlan(venues, back_to_origin = False))
 # GOOGLE MAPS
 # key: AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s
 
-def getRoute(API_Key, start_address, end_address): #FIX GOOGLE MAPS APIIIII
+def getRoute(api_key, start_address, end_address, venues): #FIX GOOGLE MAPS APIIIII
     """
     INPUT:
     - start_address : starting location
@@ -92,17 +82,41 @@ def getRoute(API_Key, start_address, end_address): #FIX GOOGLE MAPS APIIIII
     - dictionary with direction
     """
     url = 'https://maps.googleapis.com/maps/api/directions/json'
+    waypoints = 'optimize:true'
+    for venue in venues:
+        waypoints = waypoints + '|{0}'.format(venue) # pipe | separates the venues in the list
+    # play around with test
+    
     params = dict(
-        origin= start_address,
-        destination= end_address,
-        key= API_Key
+        origin=start_address,
+        destination=end_address,
+        waypoints=waypoints,
+        key=api_key
         )
 
     #print ("Searching Google Maps for best route to take from {0} to {1}").format(start_address, end_address)
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
-    return data
 
-test = getRoute(google_maps_key, 'Soho', 'Brooklyn')
+    durations_list = [] # list to store durations of trips
+    for each_leg in data['routes'][0]['legs']:
+        duration_length = each_leg['duration']['text']
+        #print(each_leg['duration']['text']) #text refers to how long the trip will take
+        durations_list.append(duration_length)
+    return durations_list
 
-#print(test) #testing
+travel_times = getRoute(google_maps_key, 'Soho', 'Brooklyn', venues)
+
+print(travel_times) #testing
+
+def buildTripPlan(venues, travel_times, trip_duration = 5, back_to_origin = True):
+    trip_plan = '' #default
+    trip_plan = trip_plan + '\n Your trip will take {0} hours'.format(trip_duration)
+    
+    for step_number, venue in enumerate(venues):
+        trip_plan = trip_plan + '\n Step {0}: Travel {1} to {2}'.format(step_number + 1, travel_times[step_number], venue)
+    if back_to_origin:
+        trip_plan = trip_plan + '\n Step {0}: Go to origin'.format(len(venues) +1) #length of venues list
+    return trip_plan
+
+print(buildTripPlan(venues, travel_times, back_to_origin = False))
