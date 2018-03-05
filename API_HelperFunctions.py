@@ -4,6 +4,7 @@ import json
 import requests
 import random #python library
 import numpy # helps with statistics
+import math
 
 #API Keys
 google_maps_key = 'AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s'
@@ -30,12 +31,12 @@ def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_l
         limit = num_locations,
         offset = random.randint(1, 50) # pages through results (which are random)
         )
-    #print ("Searching the web for some things to do in {}!").format(location)
+        #print ("Searching the web for some things to do in {}!").format(location)
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
     #return data #returns all data, however we want to return a subset
-
-    #Retrieve both the names of the top venues
+    
+       #Retrieve both the names of the top venues
     top_venues_list = [] #this is a list, not a dictionary
     for each_location in data['response']['groups'][0]['items']: #loops through each iteration
         venue_name = each_location['venue']['name']
@@ -97,26 +98,36 @@ def getRoute(api_key, start_address, end_address, venues): #FIX GOOGLE MAPS APII
     #print ("Searching Google Maps for best route to take from {0} to {1}").format(start_address, end_address)
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
-
-    durations_list = [] # list to store durations of trips
+    
+    durations_list = [] # list to store durations of trips (strings)
+    durations_list_values = [] # list to store durations of trips (as values/integers)
     for each_leg in data['routes'][0]['legs']:
         duration_length = each_leg['duration']['text']
+        duration_length_value = each_leg['duration']['value']
         #print(each_leg['duration']['text']) #text refers to how long the trip will take
         durations_list.append(duration_length)
-    return durations_list
+        durations_list_values.append(duration_length_value)
+    return durations_list, durations_list_values
 
-travel_times = getRoute(google_maps_key, 'Soho', 'Brooklyn', venues)
+travel_times, travel_times_values = getRoute(google_maps_key, 'Soho', 'Brooklyn', venues)
 
-print(travel_times) #testing
+print(travel_times, travel_times_values) #testing
 
-def buildTripPlan(venues, travel_times, trip_duration = 5, back_to_origin = True):
+def buildTripPlan(venues, travel_times, travel_times_values, back_to_origin = True, avg_time_per_venue = 30):
     trip_plan = '' #default
-    trip_plan = trip_plan + '\n Your trip will take {0} hours'.format(trip_duration)
-    
+
+    trip_duration = len(venues) * avg_time_per_venue + math.floor(sum(travel_times_values) / 60)
+    trip_duration_hours = math.floor(trip_duration / 60) 
+    trip_duration_minutes = trip_duration % 60 
+    if trip_duration_minutes == 0:
+        trip_plan = trip_plan + '\n Your trip will take {0} hours'.format(trip_duration_hours)
+    else: 
+        trip_plan = trip_plan + '\n Your trip will take {0} hours and {1} minutes'.format(trip_duration_hours, trip_duration_minutes)
+        
     for step_number, venue in enumerate(venues):
         trip_plan = trip_plan + '\n Step {0}: Travel {1} to {2}'.format(step_number + 1, travel_times[step_number], venue)
     if back_to_origin:
         trip_plan = trip_plan + '\n Step {0}: Go to origin'.format(len(venues) +1) #length of venues list
     return trip_plan
 
-print(buildTripPlan(venues, travel_times, back_to_origin = False))
+print(buildTripPlan(venues, travel_times, travel_times_values, back_to_origin = False))
