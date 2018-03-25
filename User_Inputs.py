@@ -43,7 +43,7 @@ print()
 # Time traveling
 while True:
     when = input("Would you like to go now or later? ")  
-    if not when.isalpha():
+    if not when.isalpha(): # checks if input is actual letters (alpha = alphabetical)
         print("Sorry I didn't get that")
     elif when.lower() == 'now':
         break
