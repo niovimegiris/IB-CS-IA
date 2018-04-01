@@ -1,7 +1,8 @@
+<!-- This file basically creates the input form, renders objects in backend so the website can render a form -->
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="well">
+  <div class="well">  
     <form class="form" action="" method="post">
       {{ form.hidden_tag() }}
       <p>
@@ -38,3 +39,14 @@
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
       </p>
+      <p>{{ form.return_to_start.label }}
+            {{ form.return_to_start() }}
+          </p>
+          <div class="control-group">
+              <div class="controls">
+                  <button class="btn btn-primary" type="submit">Start exploring!</button>
+              </div>
+          </div>
+      </form>
+    </div>
+{% endblock %}
