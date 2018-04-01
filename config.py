@@ -1,4 +1,2 @@
-import os
-
 class Config(object):
-    SECRET_KEY = os.environ.get('SECRET_KEY') # builds configuration for application
+    SECRET_KEY = 'niovi-ib-cs-ia' # builds configuration for application

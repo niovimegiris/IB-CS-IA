@@ -7,7 +7,7 @@ import urllib #handles characters that are not alphabetical/encoding issues
 import math
 
 #API Keys
-GOOGLE_MAPS_KEY = 'AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s' #constants should be capitalized
+GOOGLE_MAPS_KEY = 'AIzaSyC0UFVze8X0mIJ9-o0TYVKE_eZBqYR3-Ws' #constants should be capitalized
 FOURSQUARE_ID = 'KO2FJZFUOY4SF0JEBVXA4DYVHY4QF4IJEC1IHB2XORULPSVE'
 FOURSQUARE_SECRET = 'IGZJ0YRZVTMSSZ0C2T0Z4YRUN2U0AGGZTRP5JAGFQU5TMIIF'
 
@@ -60,7 +60,7 @@ def get_top_venues(location, section, num_locations = 50):
 # GOOGLE MAPS
 # key: AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s
 
-def get_route(GOOGLE_MAPS_KEY, start_address, end_address, venues, travel_mode, return_to_start):
+def get_route(start_address, end_address, venues, travel_mode, return_to_start):
     """
     INPUT:
     - origin: start address (string)
@@ -148,7 +148,7 @@ def optimize_route(origin, destination, venues, travel_mode, trip_duration, avg_
    # 16 venues = 13.5 hours
    while abs(trip_time_diff) <= last_trip_time_diff:
        optimized_route = get_route(origin, destination, venues_selected, travel_mode, return_to_start)
-       trip_time_diff = (trip_duration*60) - (sum(leg['trip_duration_value'] for leg in optimized_route)/60 + len(venues_selected)  avg_time_spent_per_venue)
+       trip_time_diff = (trip_duration*60) - (sum(leg['trip_duration_value'] for leg in optimized_route)/60 + len(venues_selected) * avg_time_spent_per_venue)
        if abs(trip_time_diff) <= last_trip_time_diff:
            last_trip_time_diff = abs(trip_time_diff)
            previous_route = optimized_route #replace old route with new optimal route
@@ -159,14 +159,14 @@ def optimize_route(origin, destination, venues, travel_mode, trip_duration, avg_
            else:
                # remove one venue from the route
                venues_selected.pop()
-  return previous_route
+   return previous_route
 
 def build_trip_plan(route, avg_time_spent_per_venue, destination, return_to_start):
     trip_plan = 'Hi traveler! ' #default greeting
     if return_to_start:
-        trip_duration = math.floor(sum(leg['trip_duration_value'] for leg in route) / 60) + (len(route)-1)  avg_time_spent_per_venue
+        trip_duration = math.floor(sum(leg['trip_duration_value'] for leg in route) / 60) + (len(route)-1) * avg_time_spent_per_venue
     else:
-        trip_duration = math.floor(sum(leg['trip_duration_value'] for leg in route) / 60) + len(route)  avg_time_spent_per_venue
+        trip_duration = math.floor(sum(leg['trip_duration_value'] for leg in route) / 60) + len(route) * avg_time_spent_per_venue
     trip_duration_hours = int(math.floor(trip_duration / 60))
     trip_duration_minutes = int(trip_duration % 60)
     if trip_duration_minutes == 0:
@@ -180,7 +180,6 @@ def build_trip_plan(route, avg_time_spent_per_venue, destination, return_to_star
             leg['trip_duration_text'], leg['destination_name'].replace(', ' + destination, ''))
     return trip_plan.split('\n')
 
-print(buildTripPlan(venues, travel_times, travel_times_values, back_to_origin = False))
 
 # post_conditions: we have taken the minutes (travel times) from google and integrated it into the buildTripPlan
 # we have to average how long people stay in venues (talk about this in criterion e)
