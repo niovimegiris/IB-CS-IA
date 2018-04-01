@@ -10,13 +10,16 @@
   <body>
     <div> style="text-align: center;">
       <h1>Welcome to <a href="{{ url_for('index') }}">ExploreNYC</a>, your guide to planning a personalized trip in NYC!</h1>
-      <div style="width: 20%; heaight: 50%; display: inline-block; text-align: left;" class="container">
+      <div style="width: 20%; height: 50%; display: inline-block; text-align: left;" class="container">
         {% block content %}{% endblock %}
       </div>
       <div style="width: 20%; height: 50%; vertical-align: top; text-align: left; display: {{ 'inline-block' if venues else 'none' }};" class="container">
-        {% for step in trip_plan %}
-          <p>{{ step }}</p>
-        {% endfor %}
+<!-- Plans itinerary -->
+        <div class="well">
+          {% for step in trip_plan %}
+            <p>{{ step }}</p>
+          {% endfor %}
+        </div>
       </div>
     </div>
     <!-- loop thru al legs of the trip and create google map -->
