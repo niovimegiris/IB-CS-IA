@@ -12,6 +12,5 @@ Flask = "*"
 Flask-WTF = "*"
 gunicorn = "*"
 WTForms = "*"
-urllib = "*"
 
 [dev-packages]
