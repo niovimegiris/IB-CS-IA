@@ -12,7 +12,7 @@ FOURSQUARE_ID = 'KO2FJZFUOY4SF0JEBVXA4DYVHY4QF4IJEC1IHB2XORULPSVE'
 FOURSQUARE_SECRET = 'IGZJ0YRZVTMSSZ0C2T0Z4YRUN2U0AGGZTRP5JAGFQU5TMIIF'
 
 # FOURSQUARE
-def get_top_venues(foursquare_id, foursquare_secret, location, section, num_locations = 50):
+def get_top_venues(location, section, num_locations = 50):
     """
     INPUT:
     - location: string containing location
@@ -23,8 +23,8 @@ def get_top_venues(foursquare_id, foursquare_secret, location, section, num_loca
     """
     url = 'https://api.foursquare.com/v2/venues/explore'
     params = dict(
-        client_id=foursquare_id,
-        client_secret=foursquare_secret,
+        client_id=FOURSQUARE_ID,
+        client_secret=FOURSQUARE_SECRET,
         v='20170001',
         near=location,
         section=section,
@@ -43,24 +43,9 @@ def get_top_venues(foursquare_id, foursquare_secret, location, section, num_loca
             top_venues_list.append(venue_name) # Adds venue (element) to existing list of venues
     return top_venues_list
 
-#ISSUE
-    # how do we randomize the names of venues for new trips?
-
-
-def randomly_select_venues(venues, num_select):
-    return random.sample(venues, num_select)
-
-venues = get_top_venues(FOURSQUARE_ID, FOURSQUARE_SECRET, 'Soho, NY', 'topPicks')
-venues = randomly_select_venues(venues, 5) # will randomly select 5 venues
-
-print(venues)
-
 #Issue #2
     # how do we make sure the selected venues are without replacement (dont repeat)?
     #ANSWER: USE NUMPY LIBRARY
-
-
-
 
 #test['meta'] everytime i request, gives unique id
 # write a for loops that loops through test['response']['groups'][0]['items'][0]['venue']['name']
@@ -75,75 +60,125 @@ print(venues)
 # GOOGLE MAPS
 # key: AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s
 
-def get_route(api_key, start_address, end_address, venues): #FIX GOOGLE MAPS APIIIII
+def get_route(GOOGLE_MAPS_KEY, start_address, end_address, venues, travel_mode, return_to_start):
     """
     INPUT:
-    - start_address : starting location
-    - end_address : destination
+    - origin: start address (string)
+    - destination: end address (string)
+    - venues: places to visit (list)
+    - travel mode: mode of traveling (string)
+    - return to start: boolean
     OUTPUT:
-    - dictionary with direction
+    - list of dictionaries (each dictionary contains the
+    - destination and corresponding trip times)
+    - Note: list is ordered based on optimized route
     """
     url = 'https://maps.googleapis.com/maps/api/directions/json'
     waypoints = 'optimize:true'
     for venue in venues:
         waypoints = waypoints + '|{0}'.format(venue) # pipe | separates the venues in the list
-    # play around with test
-
+    if return_to_start:
+        end_address = start_address
     params = dict(
         origin=start_address,
         destination=end_address,
         waypoints=waypoints,
-        key=api_key
+        mode=travel_mode,
+        key=GOOGLE_MAPS_KEY
         )
-
-    #print ("Searching Google Maps for best route to take from {0} to {1}").format(start_address, end_address)
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
 
-    durations_list = [] # list to store durations of trips (strings)
-    durations_list_values = [] # list to store durations of trips (as values/integers)
-    for each_leg in data['routes'][0]['legs']:
-        duration_length = each_leg['duration']['text']
-        duration_length_value = each_leg['duration']['value']
-        #print(each_leg['duration']['text']) #text refers to how long the trip will take
-        durations_list.append(duration_length)
-        durations_list_values.append(duration_length_value)
-    return durations_list, durations_list_values
+    route = [] # an empty list
+    if data['status'] == 'OK': # if google maps API verifiries address
+        waypoint_order = data['routes'][0]['waypoint_order'] # orders which waypoint/venue is most efficient in regard to map
+        for leg_number, each_leg in enumerate(data['routes'][0]['legs']):
+            if leg_number < len(venues):
+                route.append({'destination_name': venues[waypoint_order[leg_number]], # appends a dictionary that orders the legs of the trip
+                              'trip_duration_value': each_leg['duration']['value'],
+                              'trip_duration_text': each_leg['duration']['text']})
+            elif return_to_start:
+                route.append({'destination_name': destination,
+                              'trip_duration_value': each_leg['duration']['value'],
+                              'trip_duration_text': each_leg['duration']['text']})
+    return route
 
-travel_times, travel_times_values = get_route(GOOGLE_MAPS_KEY, 'Soho', 'Brooklyn', venues)
+def format_gmap_url(origin, destination, travel_mode):
+    gmap_embed_url = "https://www.google.com/maps/embed/v1/directions?key={0}&origin={1}&destination={2}".format(GOOGLE_MAPS_KEY,
+        urllib.parse.quote(origin.encode('utf-8')), urllib.parse.quote(destination.encode('utf-8')))
+    if travel_mode:
+        gmap_embed_url += "&mode={}".format(travel_mode)
+    return gmap_embed_url
 
-print(travel_times, travel_times_values) #testing
+def create_trip_legs(origin, venues, travel_mode):
+    embed_map_urls = [format_gmap_url(origin, venues[0], travel_mode)]
+    for index in range(0, len(venues)-1):
+        embed_map_urls.append(format_gmap_url(venues[index], venues[index+1], travel_mode))
+    return embed_map_urls
 
-while abs(trip_time_diff) <= last_trip_time_diff:
-    optimized_route = get_route(origin, destination, venues_selected, travel_mode, return_to_start)
-    trip_time_diff = (trip_duration*60) - (sum(leg['trip_duration_value'] for leg in optimized_route)/60 + len(venues_selected) * avg_time)
-    if abs(trip_time_diff) <= last_trip_time_diff:
-        last_trip_time_diff = abs(trip_time_diff)
-        previous_route = optimized_route # replaces old route with new router
-        if trip_time_diff > 0:
-            # adds one venue from route (randomly)
-            venues_selected.append(random.sample(venues, 1))
-        else:
-            # removes one venue from the router
-            venues_selected.pop()
-return previous_route
+def optimize_route(origin, destination, venues, travel_mode, trip_duration, avg_time_spent_per_venue, return_to_start):
+    # origin = Soho
+    # destination = Brooklyn
+    # venues = 50+ venues
+    # travel_mode = driving
+    # trip_duration = how many hours the user wants to travel = 12 hours
+    # avg_time_spent_per_venue = 30 min
+    # return_to_start = True or False
+    # This function's goal is to find the right number of venues AND
+    # which venues those are to travel to within the time limit
+    # Naive: start at 1 venue, try 2 venues, 3 venues, etc. until you hit 12 hours
+    # Naive: google returns 10 min travel + 30 min = 40 min, 2 venues: google returns 30 min of travel + 30 2
+    # We're going to start at a number of venues that is likely to be close to the optimal result
+    # 12 hours -> 12 venues
+    # what happens if 12 venues is too little or too much? we want our algorithm to go up or down
+    # if 12 venues is >>>> 12 hours, we will loop downwards (i.e. try less venues)
+    # if 12 venues is <<<< 12 hours, we will loop upwards (i.e. try more venues)
+   initial_attempt = math.floor(trip_duration)
+   # https://docs.python.org/2/library/random.html#random.sample
+   # Using the sample() method in the ‘random’ module, we can sample
+   # a population without replacement
+   venues_selected = random.sample(venues, initial_attempt) #grab 12 random venues out of the 50
+   venues = [x for x in venues if x not in venues_selected] #remove 12 from list of 50
+   trip_time_diff = 0 #create a time difference variable to keep track of how close the route is compared to user input
+   last_trip_time_diff = 1000000 #create another time difference variable to keep track of the last attempt
+   # 12 venues = 8 hours
+   # 13 venues = 9 hours
+   # 14 venues = 10 hours
+   # 15 venues = 12.5 hours (12 - 12.5 = -0.5 hours from the user input)
+   # 16 venues = 13.5 hours
+   while abs(trip_time_diff) <= last_trip_time_diff:
+       optimized_route = get_route(origin, destination, venues_selected, travel_mode, return_to_start)
+       trip_time_diff = (trip_duration*60) - (sum(leg['trip_duration_value'] for leg in optimized_route)/60 + len(venues_selected)  avg_time_spent_per_venue)
+       if abs(trip_time_diff) <= last_trip_time_diff:
+           last_trip_time_diff = abs(trip_time_diff)
+           previous_route = optimized_route #replace old route with new optimal route
+           if trip_time_diff > 0:
+               # add one venue from the route (at random)
+               venues_selected += random.sample(venues, 1)
+               venues = [x for x in venues if x not in venues_selected]
+           else:
+               # remove one venue from the route
+               venues_selected.pop()
+  return previous_route
 
-def buildTripPlan(venues, travel_times, travel_times_values, back_to_origin = True, avg_time_per_venue = 30):
-    trip_plan = '' #default
-
-    trip_duration = len(venues) * avg_time_per_venue + math.floor(sum(travel_times_values) / 60)
-    trip_duration_hours = math.floor(trip_duration / 60)
-    trip_duration_minutes = trip_duration % 60
-    if trip_duration_minutes == 0:
-        trip_plan = trip_plan + '\n Your trip will take {0} hours'.format(trip_duration_hours)
+def build_trip_plan(route, avg_time_spent_per_venue, destination, return_to_start):
+    trip_plan = 'Hi traveler! ' #default greeting
+    if return_to_start:
+        trip_duration = math.floor(sum(leg['trip_duration_value'] for leg in route) / 60) + (len(route)-1)  avg_time_spent_per_venue
     else:
-        trip_plan = trip_plan + '\n Your trip will take {0} hours and {1} minutes'.format(trip_duration_hours, trip_duration_minutes)
+        trip_duration = math.floor(sum(leg['trip_duration_value'] for leg in route) / 60) + len(route)  avg_time_spent_per_venue
+    trip_duration_hours = int(math.floor(trip_duration / 60))
+    trip_duration_minutes = int(trip_duration % 60)
+    if trip_duration_minutes == 0:
+        trip_plan += 'Your trip will take roughly {0} hours. '.format(trip_duration_hours)
+    else:
+        trip_plan += 'Your trip will take roughly {0} hours and {1} minutes. '.format(trip_duration_hours, trip_duration_minutes)
+    trip_plan += 'Please allocate 30 minutes for each stop on your trip. Enjoy!'
 
-    for step_number, venue in enumerate(venues):
-        trip_plan = trip_plan + '\n Step {0}: Travel {1} to {2}'.format(step_number + 1, travel_times[step_number], venue)
-    if back_to_origin:
-        trip_plan = trip_plan + '\n Step {0}: Go to origin'.format(len(venues) +1) #length of venues list
-    return trip_plan
+    for leg_number, leg in enumerate(route):
+        trip_plan += '\nStep {0}: Travel {1} to {2}'.format(leg_number + 1,
+            leg['trip_duration_text'], leg['destination_name'].replace(', ' + destination, ''))
+    return trip_plan.split('\n')
 
 print(buildTripPlan(venues, travel_times, travel_times_values, back_to_origin = False))
 
