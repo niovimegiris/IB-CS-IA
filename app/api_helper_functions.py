@@ -3,16 +3,16 @@
 import json
 import requests
 import random #python library
-import numpy # helps with statistics
+import urllib #handles characters that are not alphabetical/encoding issues
 import math
 
 #API Keys
-google_maps_key = 'AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s'
-foursquare_id = 'KO2FJZFUOY4SF0JEBVXA4DYVHY4QF4IJEC1IHB2XORULPSVE'
-foursquare_secret = 'IGZJ0YRZVTMSSZ0C2T0Z4YRUN2U0AGGZTRP5JAGFQU5TMIIF'
+GOOGLE_MAPS_KEY = 'AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s' #constants should be capitalized
+FOURSQUARE_ID = 'KO2FJZFUOY4SF0JEBVXA4DYVHY4QF4IJEC1IHB2XORULPSVE'
+FOURSQUARE_SECRET = 'IGZJ0YRZVTMSSZ0C2T0Z4YRUN2U0AGGZTRP5JAGFQU5TMIIF'
 
 # FOURSQUARE
-def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_locations = 50):
+def get_top_venues(foursquare_id, foursquare_secret, location, section, num_locations = 50):
     """
     INPUT:
     - location: string containing location
@@ -23,41 +23,42 @@ def getTopVenues(client_id, client_secret, location, section = 'topPicks', num_l
     """
     url = 'https://api.foursquare.com/v2/venues/explore'
     params = dict(
-        client_id = client_id,
-        client_secret = client_secret,
-        v = '20170001',
-        near = location,
-        section = section,
-        limit = num_locations,
-        offset = random.randint(1, 50) # pages through results (which are random)
+        client_id=foursquare_id,
+        client_secret=foursquare_secret,
+        v='20170001',
+        near=location,
+        section=section,
+        limit=num_locations,
+        offset=random.randint(1, 50) # pages through results (which are random)
         )
-        #print ("Searching the web for some things to do in {}!").format(location)
+
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
     #return data #returns all data, however we want to return a subset
-
-       #Retrieve both the names of the top venues
+    #Retrieve names of the top venues
     top_venues_list = [] #this is a list, not a dictionary
-    for each_location in data['response']['groups'][0]['items']: #loops through each iteration
-        venue_name = each_location['venue']['name']
-        #venue_name = data['response']['groups'][0]['items'][each_location]['venue']['name'] # Subset of data
-        top_venues_list.append(venue_name) # Adds venue (element) to existing list of venues
+    if data['meta']['code'] == 200: #only look into data if the foursquare API returns success
+        for each_location in data['response']['groups'][0]['items']: #loops through each iteration
+            venue_name = each_location['venue']['name'] + ', ' + location #adds city to the venue
+            top_venues_list.append(venue_name) # Adds venue (element) to existing list of venues
     return top_venues_list
 
 #ISSUE
     # how do we randomize the names of venues for new trips?
 
 
-def randomlySelectVenues(venues, num_select):
-    return numpy.random.choice(venues, num_select, replace=False)
+def randomly_select_venues(venues, num_select):
+    return random.sample(venues, num_select)
 
-venues = getTopVenues(foursquare_id, foursquare_secret, 'Soho, NY')
-venues = randomlySelectVenues(venues, 5) # will randomly select 5 venues
+venues = get_top_venues(FOURSQUARE_ID, FOURSQUARE_SECRET, 'Soho, NY', 'topPicks')
+venues = randomly_select_venues(venues, 5) # will randomly select 5 venues
+
+print(venues)
 
 #Issue #2
     # how do we make sure the selected venues are without replacement (dont repeat)?
     #ANSWER: USE NUMPY LIBRARY
-print(venues)
+
 
 
 
@@ -74,7 +75,7 @@ print(venues)
 # GOOGLE MAPS
 # key: AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s
 
-def getRoute(api_key, start_address, end_address, venues): #FIX GOOGLE MAPS APIIIII
+def get_route(api_key, start_address, end_address, venues): #FIX GOOGLE MAPS APIIIII
     """
     INPUT:
     - start_address : starting location
@@ -109,7 +110,7 @@ def getRoute(api_key, start_address, end_address, venues): #FIX GOOGLE MAPS APII
         durations_list_values.append(duration_length_value)
     return durations_list, durations_list_values
 
-travel_times, travel_times_values = getRoute(google_maps_key, 'Soho', 'Brooklyn', venues)
+travel_times, travel_times_values = get_route(GOOGLE_MAPS_KEY, 'Soho', 'Brooklyn', venues)
 
 print(travel_times, travel_times_values) #testing
 
@@ -145,3 +146,14 @@ def buildTripPlan(venues, travel_times, travel_times_values, back_to_origin = Tr
     return trip_plan
 
 print(buildTripPlan(venues, travel_times, travel_times_values, back_to_origin = False))
+
+# post_conditions: we have taken the minutes (travel times) from google and integrated it into the buildTripPlan
+# we have to average how long people stay in venues (talk about this in criterion e)
+# Issues as of 4 March 2018:
+# (1) We want to selecte the number of venues based off how much time the user is free
+# (2) we need to calculate how long it takes to go back to origin and include that in our trip plan if back_to_origin = True
+# (3) hardest: foursquare gives us a list of venues however google maps rearranges these venues so that the trip durations are more efficient
+# we need to fix this and match them
+# (4) easy: add parameter that specifies travel_mode (google maps takes this into account)
+# (5) add more user choices
+# (6) HTML it!
