@@ -2,19 +2,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="well">  
+  <div class="well">
     <form class="form" action="" method="post">
       {{ form.hidden_tag() }}
       <p>
         {{ form.origin.label }}
-        {{ form.origin(size=32) }}
+        {{ form.origin(size=24) }}
         {% for error in form.origin.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
       </p>
       <p>
           {{ form.destination.label }}
-          {{ form.destination(size=32) }}
+          {{ form.destination(size=24) }}
           {% for error in form.destination.errors %}
           <span style="color: red;">[{{ error }}]</span>
           {% endfor %}
@@ -28,7 +28,7 @@
       </p>
       <p>
         {{ form.trip_duration.label }}
-        {{ form.trip_duration(size=32) }}
+        {{ form.trip_duration(size=24) }}
         {% for error in form.trip_duration.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}

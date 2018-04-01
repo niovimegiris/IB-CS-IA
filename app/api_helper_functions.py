@@ -98,7 +98,7 @@ def get_route(start_address, end_address, venues, travel_mode, return_to_start):
                               'trip_duration_value': each_leg['duration']['value'],
                               'trip_duration_text': each_leg['duration']['text']})
             elif return_to_start:
-                route.append({'destination_name': destination,
+                route.append({'destination_name': end_address,
                               'trip_duration_value': each_leg['duration']['value'],
                               'trip_duration_text': each_leg['duration']['text']})
     return route
