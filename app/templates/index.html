@@ -6,14 +6,14 @@
     <form class="form" action="" method="post">
       {{ form.hidden_tag() }}
       <p>
-        {{ form.origin.label }}
+        {{ form.origin.label }} <br>
         {{ form.origin(size=32) }}
         {% for error in form.origin.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
       </p>
       <p>
-          {{ form.destination.label }}
+          {{ form.destination.label }} <br>
           {{ form.destination(size=32) }}
           {% for error in form.destination.errors %}
           <span style="color: red;">[{{ error }}]</span>
@@ -27,7 +27,7 @@
         {% endfor %}
       </p>
       <p>
-        {{ form.trip_duration.label }}
+        {{ form.trip_duration.label }} <br>
         {{ form.trip_duration(size=32) }}
         {% for error in form.trip_duration.errors %}
         <span style="color: red;">[{{ error }}]</span>
