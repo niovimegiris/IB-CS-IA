@@ -140,15 +140,3 @@ def build_trip_plan(route, avg_time_spent_per_venue, destination, return_to_star
         trip_plan += '\nStep {0}: Travel {1} to {2}'.format(leg_number + 1,
             leg['trip_duration_text'], leg['destination_name'].replace(', ' + destination, ''))
     return trip_plan.split('\n')
-
-
-# post_conditions: we have taken the minutes (travel times) from google and integrated it into the buildTripPlan
-# we have to average how long people stay in venues (talk about this in criterion e)
-# Issues as of 4 March 2018:
-# (1) We want to selecte the number of venues based off how much time the user is free
-# (2) we need to calculate how long it takes to go back to origin and include that in our trip plan if back_to_origin = True
-# (3) hardest: foursquare gives us a list of venues however google maps rearranges these venues so that the trip durations are more efficient
-# we need to fix this and match them
-# (4) easy: add parameter that specifies travel_mode (google maps takes this into account)
-# (5) add more user choices
-# (6) HTML it!

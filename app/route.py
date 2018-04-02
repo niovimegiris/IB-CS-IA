@@ -32,7 +32,7 @@ def index(): # main page
 
         if not venues: # if venues does not exists
             trip_plan.append('No venues found. Try another destination.')
-        if venues and not optimized_route: # when venues exists but Google can't find route
+        if venues and not optimized_route: # when venues exists but Google can't find an optimal route
             trip_plan.append('Venues found, no route found. Try again.')
     return render_template('index.html',
                            form=form,
