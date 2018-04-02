@@ -1,5 +1,5 @@
 # API helper functions
-# libraries
+# libraries/modules
 import json
 import requests
 import random #python library
@@ -34,8 +34,7 @@ def get_top_venues(location, section, num_locations = 50):
 
     resp = requests.get(url=url, params=params)
     data = json.loads(resp.text)
-    #return data #returns all data, however we want to return a subset
-    #Retrieve names of the top venues
+
     top_venues_list = [] #this is a list, not a dictionary
     if data['meta']['code'] == 200: #only look into data if the foursquare API returns success
         for each_location in data['response']['groups'][0]['items']: #loops through each iteration
@@ -43,23 +42,7 @@ def get_top_venues(location, section, num_locations = 50):
             top_venues_list.append(venue_name) # Adds venue (element) to existing list of venues
     return top_venues_list
 
-#Issue #2
-    # how do we make sure the selected venues are without replacement (dont repeat)?
-    #ANSWER: USE NUMPY LIBRARY
-
-#test['meta'] everytime i request, gives unique id
-# write a for loops that loops through test['response']['groups'][0]['items'][0]['venue']['name']
-# changes second 0 add one each time to get all locations
-# every time i loop, each name of each location will append it to a list
-# return all names at end of function
-
-#`all_names = []`
-#all_names.append(name)`
-
-
 # GOOGLE MAPS
-# key: AIzaSyAWNzuFCqmmZQwRyg5vmOwnLDfv0Ma0o5s
-
 def get_route(start_address, end_address, venues, travel_mode, return_to_start):
     """
     INPUT:
@@ -90,11 +73,11 @@ def get_route(start_address, end_address, venues, travel_mode, return_to_start):
     data = json.loads(resp.text)
 
     route = [] # an empty list
-    if data['status'] == 'OK': # if google maps API verifiries address
+    if data['status'] == 'OK': # if google maps API verifies address
         waypoint_order = data['routes'][0]['waypoint_order'] # orders which waypoint/venue is most efficient in regard to map
         for leg_number, each_leg in enumerate(data['routes'][0]['legs']):
             if leg_number < len(venues):
-                route.append({'destination_name': venues[waypoint_order[leg_number]], # appends a dictionary that orders the legs of the trip
+                route.append({'destination_name': venues[waypoint_order[leg_number]],
                               'trip_duration_value': each_leg['duration']['value'],
                               'trip_duration_text': each_leg['duration']['text']})
             elif return_to_start:
@@ -117,35 +100,13 @@ def create_trip_legs(origin, venues, travel_mode):
     return embed_map_urls
 
 def optimize_route(origin, destination, venues, travel_mode, trip_duration, avg_time_spent_per_venue, return_to_start):
-    # origin = Soho
-    # destination = Brooklyn
-    # venues = 50+ venues
-    # travel_mode = driving
-    # trip_duration = how many hours the user wants to travel = 12 hours
-    # avg_time_spent_per_venue = 30 min
-    # return_to_start = True or False
-    # This function's goal is to find the right number of venues AND
-    # which venues those are to travel to within the time limit
-    # Naive: start at 1 venue, try 2 venues, 3 venues, etc. until you hit 12 hours
-    # Naive: google returns 10 min travel + 30 min = 40 min, 2 venues: google returns 30 min of travel + 30 2
-    # We're going to start at a number of venues that is likely to be close to the optimal result
-    # 12 hours -> 12 venues
-    # what happens if 12 venues is too little or too much? we want our algorithm to go up or down
-    # if 12 venues is >>>> 12 hours, we will loop downwards (i.e. try less venues)
-    # if 12 venues is <<<< 12 hours, we will loop upwards (i.e. try more venues)
+
    initial_attempt = math.floor(trip_duration)
-   # https://docs.python.org/2/library/random.html#random.sample
-   # Using the sample() method in the ‘random’ module, we can sample
-   # a population without replacement
-   venues_selected = random.sample(venues, initial_attempt) #grab 12 random venues out of the 50
-   venues = [x for x in venues if x not in venues_selected] #remove 12 from list of 50
+   venues_selected = random.sample(venues, initial_attempt) #grab random venues out of the 50
+   venues = [x for x in venues if x not in venues_selected] #removes from list of 50
    trip_time_diff = 0 #create a time difference variable to keep track of how close the route is compared to user input
    last_trip_time_diff = 1000000 #create another time difference variable to keep track of the last attempt
-   # 12 venues = 8 hours
-   # 13 venues = 9 hours
-   # 14 venues = 10 hours
-   # 15 venues = 12.5 hours (12 - 12.5 = -0.5 hours from the user input)
-   # 16 venues = 13.5 hours
+
    while abs(trip_time_diff) <= last_trip_time_diff:
        optimized_route = get_route(origin, destination, venues_selected, travel_mode, return_to_start)
        trip_time_diff = (trip_duration*60) - (sum(leg['trip_duration_value'] for leg in optimized_route)/60 + len(venues_selected) * avg_time_spent_per_venue)
