@@ -3,9 +3,9 @@ from wtforms import StringField, RadioField, IntegerField, BooleanField, SubmitF
 from wtforms.validators import DataRequired, NumberRange
 
 class TripForm(FlaskForm): # creating a class with different traits
-    origin = StringField('Where are you starting your journey?',
+    origin = StringField('Where are you starting your journey? (e.g. Brooklyn, NYC/13432 Wall Street, NY)',
                          validators=[ DataRequired()])
-    destination = StringField('Where would you like to go?',
+    destination = StringField('Where would you like to go? (e.g. SoHo, NY)',
                               validators=[DataRequired()])
     interest = RadioField('What would you like to do?',
                           choices=[('arts', 'Art'),
@@ -15,7 +15,7 @@ class TripForm(FlaskForm): # creating a class with different traits
                                    ('outdoors', 'Outdoors'),
                                    ('shops', 'Shops'),
                                    ('topPicks', 'Surprise me!')])
-    trip_duration = IntegerField('How many hours do you want your trip to last? (approx.)',
+    trip_duration = IntegerField('Approximately how many hours do you want your trip to last? (e.g. 4, 6)',
                                  validators=[DataRequired(message='Please enter between 1 and 12 hours'),
                                              NumberRange(min=1, max=12, message='Please enter between 1 and 12 hours')])
     travel_mode = RadioField('How would you like to travel?',
