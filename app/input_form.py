@@ -16,7 +16,7 @@ class TripForm(FlaskForm): # creating a class with different traits
                                    ('shops', 'Shops'),
                                    ('topPicks', 'Surprise me!')])
     trip_duration = IntegerField('Approximately how many hours do you want your trip to last? (e.g. 4, 6)',
-                                 validators=[DataRequired(message='Please enter between 1 and 12 hours'),
+                                 validators=[DataRequired(message='Please enter a whole number between 1 and 12 hours'),
                                              NumberRange(min=1, max=12, message='Please enter between 1 and 12 hours')])
     travel_mode = RadioField('How would you like to travel?',
                              choices=[('driving', 'Driving'),
